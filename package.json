@@ -2,11 +2,16 @@
   "name": "konter",
   "version": "0.1.0",
   "private": true,
+  "description": "Deskripsi aplikasi Anda",
+  "author": "Nama Anda",
+  "main": "main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "electron": "electron .",
+    "lint": "next lint",
+    "package": "electron-builder"
   },
   "dependencies": {
     "firebase": "^11.0.1",
@@ -24,6 +29,26 @@
     "swr": "^2.2.5"
   },
   "devDependencies": {
-    "electron": "^33.0.2"
-  }
+    "electron": "^33.0.2",
+    "electron-builder": "^latest"
+  },
+  "build": {
+    "appId": "com.namaanda.konter",
+    "productName": "Konter",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "path/to/icon.ico"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "license": "ISC"
 }
