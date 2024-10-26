@@ -1,0 +1,1256 @@
+@import "./globals.scss";
+
+.dashboard {
+    display: flex;
+
+    @media only screen and (max-width: 992px) {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 5%;
+
+        @media only screen and (max-width: 992px) {
+            width: 100%;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            padding: 1rem 2%;
+            background-color: hsla(0, 0%, 100%, 0.1);
+            backdrop-filter: blur(10px);
+
+            &__container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .profile {
+                    display: flex;
+                    gap: 0.5rem;
+
+                    .img {
+                        img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+                    }
+
+                    .text {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        gap: 0.5rem;
+                        h2 {
+                            font-size: 1.5rem;
+                            letter-spacing: 2px;
+
+                            @media only screen and (max-width: 768px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+
+                        p {
+                            font-size: 1.3rem;
+                            letter-spacing: 2px;
+
+                            @media only screen and (max-width: 768px) {
+                                font-size: 1.1rem;
+                            }
+                        }
+                    }
+                }
+
+                .header__actions {
+                    display: flex;
+                    gap: 3rem;
+
+                    @media only screen and (max-width: 768px) {
+                        gap: 2rem;
+                    }
+
+                    .search {
+                        display: flex;
+                        padding: 1rem;
+                        background-color: #efefef;
+                        border-radius: 12px;
+                        align-items: center;
+                        gap: 1rem;
+
+                        input {
+                            width: 100%;
+                            height: 50px;
+                            outline: none;
+                            border: none;
+                            padding: 0.5rem;
+                            background-color: transparent;
+                            font-size: 1.3rem;
+                            color: $text-c;
+                            letter-spacing: 2px;
+
+                            @media only screen and (max-width: 768px) {
+                                font-size: 1.1rem;
+                            }
+                        }
+                    }
+
+                    .logout__btn {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+
+        .nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8%;
+            display: grid;
+            place-items: center;
+            height: 100%;
+
+            @media only screen and (max-width: 1366px) {
+                width: 10%;
+            }
+
+            @media only screen and (max-width: 992px) {
+                top: unset;
+                transform: unset;
+                bottom: 0;
+                width: 100%;
+                height: 10vh;
+                background-color: hsla(0, 0%, 100%, 0.1);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+                padding: 1rem;
+            }
+
+            &__list {
+                display: grid;
+                place-items: center;
+                gap: 2rem;
+                list-style: none;
+                margin-top: 5rem;
+
+                @media only screen and (max-width: 1366px) {
+                    margin-top: auto;
+                }
+
+                @media only screen and (max-width: 992px) {
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                    margin-top: unset;
+                }
+
+                @media only screen and (max-width: 768px) {
+                    gap: 1rem;
+                }
+
+                .nav__item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    padding: 1rem;
+                    border-radius: 12px;
+                    width: 100%;
+                    transition: all 0.5s ease-in-out;
+
+                    &.active {
+                        background-color: $primary-c;
+                        color: $background-c;
+                    }
+
+                    .nav__link {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 0.5rem;
+
+                        .icon {
+                            font-size: 2rem;
+
+                            @media only screen and (max-width: 768px) {
+                                font-size: 1.5rem;
+                            }
+                        }
+
+                        .name {
+                            font-size: 1.1rem;
+
+                            @media only screen and (max-width: 768px) {
+                                font-size: 1rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .aside {
+        width: 100%;
+        padding: 4rem;
+
+        @media only screen and (max-width: 992px) {
+            padding: 3rem 0;
+        }
+
+        .home {
+            .home__container {
+                padding: 1rem 2%;
+                display: flex;
+                flex-direction: column;
+
+                .img {
+                    display: flex;
+                    width: 100%;
+                    margin-bottom: 2rem;
+
+                    img {
+                        width: 500px;
+                        height: 500px;
+                        object-fit: cover;
+                        margin: 0 auto;
+                    }
+                }
+
+                .components {
+                    display: flex;
+                    gap: 2rem;
+
+                    .content-card {
+                        width: 80%;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        padding: 2rem 2%;
+                        display: grid;
+                        place-items: center;
+                        border-radius: 12px;
+                        gap: 1rem;
+                        height: 200px;
+
+                        .box {
+                            display: grid;
+                            place-items: center;
+                            gap: 1rem;
+
+                            h1 {
+                                font-size: 1.5rem;
+                                letter-spacing: 2px;
+                            }
+
+                            h2 {
+                                font-size: 2rem;
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .data-barang {
+            .barang__container {
+                padding: 1rem 2%;
+
+                @media only screen and (max-width: 992px) {
+                    padding: 1rem 0;
+                }
+
+                .img {
+                    img {
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+
+                .actions {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+
+                    @media only screen and (max-width: 992px) {
+                        margin-bottom: 1.5rem;
+                    }
+
+                    .title {
+                        h1 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+
+                    .form {
+                        display: flex;
+                        width: 150px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        height: 50px;
+                        display: grid;
+                        place-items: center;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                    }
+                }
+
+                .barang-table {
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 1rem;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        .action__btn {
+                            display: flex;
+                            justify-content: space-around;
+                        }
+
+                        td {
+                            font-size: 1.4rem;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.2rem;
+                            }
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 1.5rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+                    }
+                }
+
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(10px);
+                    z-index: 9999;
+                    display: grid;
+                    place-items: center;
+
+                    .modal-content {
+                        padding: 1rem;
+                        width: 30%;
+                        height: 50%;
+                        background-color: $background-c;
+                        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+                        display: grid;
+                        place-items: center;
+                        border-radius: 12px;
+
+                        h2 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+
+                        p {
+                            font-size: 1.3rem;
+                        }
+
+                        .modal-actions {
+                            display: flex;
+                            gap: 1rem;
+
+                            button {
+                                width: 100px;
+                                height: 50px;
+                                background-color: $primary-c;
+                                color: $background-c;
+                                border-radius: 12px;
+                                font-size: 1.3rem;
+                                border: none;
+                            }
+                        }
+                    }
+                }
+
+                .toolbar {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3rem;
+                    margin-bottom: 3rem;
+
+                    input {
+                        width: 20%;
+                        padding: 1.5rem;
+                        background-color: $primary-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        border: none;
+                        color: $background-c;
+
+                        @media only screen and (max-width: 992px) {
+                            width: 32%;
+                            padding: 1rem;
+                        }
+
+                        &::placeholder {
+                            color: $background-c;
+                            opacity: 0.8;
+                        }
+                    }
+
+                    .total {
+                        h2 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .form__data-barang {
+            .barang__container {
+                padding: 1rem 2%;
+
+                .actions {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    h1 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    a {
+                        font-size: 1.3rem;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        width: 120px;
+                        height: 40px;
+                        display: grid;
+                        place-items: center;
+                        letter-spacing: 2px;
+
+                        @media only screen and (min-width: 1366px) {
+                            font-size: 1.5rem;
+                            width: 150px;
+                            height: 50px;
+                        }
+                    }
+                }
+
+                form {
+                    margin-top: 5rem;
+                    .form-group {
+                        display: flex;
+                        gap: 2rem;
+                        margin-bottom: 3rem;
+
+                        label {
+                            width: 20%;
+                            padding: 1rem;
+                            font-size: 1.3rem;
+
+                            @media only screen and (min-width: 1366px) {
+                                font-size: 1.5rem;
+                            }
+                        }
+
+                        input {
+                            width: 100%;
+                            height: 50px;
+                            background-color: transparent;
+                            border: 1px solid #ddd;
+                            padding: 1rem;
+                            border-radius: 12px;
+                            font-size: 1.2rem;
+                            color: $text-c;
+
+                            @media only screen and (min-width: 1366px) {
+                                font-size: 1.5rem;
+                                height: 60px;
+                            }
+
+                            &:focus {
+                                outline: none;
+                            }
+
+                            &:disabled {
+                                background-color: $primary-c;
+                                color: $background-c;
+                                cursor: not-allowed;
+                            }
+                        }
+                    }
+
+                    button {
+                        width: 100%;
+                        padding: 1rem;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        margin-top: 3rem;
+
+                        @media only screen and (min-width: 1366px) {
+                            height: 70px;
+                            font-size: 1.5rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .transaksi {
+            &__container {
+                padding: 1rem 2%;
+
+                .action {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    h1 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    button {
+                        font-size: 1.2rem;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        width: 200px;
+                        height: 50px;
+                        letter-spacing: 1px;
+                    }
+                }
+
+                .toolbar {
+                    display: flex;
+                    margin-top: 2rem;
+                    margin-bottom: 2rem;
+                    width: 100%;
+                    gap: 2rem;
+
+                    .search {
+                        padding: 1rem;
+                        background-color: $primary-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        border: none;
+                        color: $background-c;
+
+                        &::placeholder {
+                            color: $background-c;
+                            opacity: 0.8;
+                            letter-spacing: 2px;
+                            font-size: 1rem;
+                        }
+                    }
+
+                    .date {
+                        padding: 1rem;
+                        background-color: transparent;
+                        border-radius: 12px;
+                        border: none;
+                        border-bottom: 1px solid #ddd;
+                        font-size: 1.3rem;
+                        color: $text-c;
+                        outline: none;
+                    }
+                }
+
+                .transaksi-table {
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 1rem;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        .action__btn {
+                            display: flex;
+                            justify-content: space-around;
+                        }
+
+                        td {
+                            font-size: 1.4rem;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.2rem;
+                            }
+                        }
+
+                        .buttons {
+                            display: flex;
+                            gap: 0.5rem;
+                            align-items: center;
+                            justify-content: center;
+
+                            .print {
+                                cursor: pointer;
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                                background-color: #2980b9;
+                                color: $background-c;
+                                border-radius: 12px;
+                                width: 100%;
+                                display: grid;
+                                place-items: center;
+                            }
+
+                            a {
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                                background-color: #27ae60;
+                                color: $background-c;
+                                border-radius: 12px;
+                                width: 100%;
+                                display: grid;
+                                place-items: center;
+                            }
+
+                            .delete {
+                                cursor: pointer;
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                                background-color: #c0392b;
+                                color: $background-c;
+                                border-radius: 12px;
+                                width: 100%;
+                                display: grid;
+                                place-items: center;
+                            }
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 1.5rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+                    }
+                }
+            }
+
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                z-index: 9999;
+                display: grid;
+                place-items: center;
+
+                .modal-content {
+                    padding: 1rem;
+                    width: 30%;
+                    height: 50%;
+                    background-color: $background-c;
+                    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+                    display: grid;
+                    place-items: center;
+                    border-radius: 12px;
+
+                    h2 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    p {
+                        font-size: 1.3rem;
+                    }
+
+                    .modal-actions {
+                        display: flex;
+                        gap: 1rem;
+
+                        button {
+                            width: 100px;
+                            height: 50px;
+                            background-color: $primary-c;
+                            color: $background-c;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            border: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        .form-transaksi {
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+
+                form {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2rem;
+
+                    .form__group {
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 1rem;
+
+                        input {
+                            width: 100%;
+                            height: 60px;
+                            background-color: $primary-c;
+                            color: $background-c;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            padding: 1rem;
+                        }
+                    }
+
+                    .form__group-product {
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1rem;
+
+                        div {
+                            display: flex;
+                            gap: 0.5rem;
+
+                            button {
+                                width: 100%;
+                                height: 50px;
+                                background-color: $primary-c;
+                                color: $background-c;
+                                border-radius: 12px;
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                            }
+
+                            select {
+                                width: 100%;
+                                height: 50px;
+                                background-color: $primary-c;
+                                color: $background-c;
+                                border-radius: 12px;
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                            }
+
+                            input {
+                                width: 100%;
+                                height: 50px;
+                                background-color: $primary-c;
+                                color: $background-c;
+                                border-radius: 12px;
+                                font-size: 1.3rem;
+                                padding: 1rem;
+                            }
+                        }
+
+                        button {
+                            width: 100%;
+                            height: 50px;
+                            background-color: $primary-c;
+                            color: $background-c;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            padding: 1rem;
+                        }
+                    }
+
+                    .date {
+                        width: 50%;
+                        height: 50px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        padding: 1rem;
+                    }
+
+                    .form__group-total {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1rem;
+                        text-align: center;
+                        margin-top: 1rem;
+                        h3 {
+                            font-size: 1.3rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+
+                    button {
+                        width: 100%;
+                        height: 50px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        padding: 1rem;
+                        border: none;
+                    }
+                }
+            }
+
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                z-index: 9999;
+                display: grid;
+                place-items: center;
+
+                .modal-content {
+                    padding: 1rem;
+                    width: 30%;
+                    height: 50%;
+                    background-color: $background-c;
+                    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+                    display: grid;
+                    place-items: center;
+                    border-radius: 12px;
+
+                    h2 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    h1 {
+                        font-size: 2.5rem;
+                    }
+
+                    .modal-actions {
+                        display: flex;
+                        gap: 1rem;
+
+                        button {
+                            width: 100px;
+                            height: 50px;
+                            background-color: $primary-c;
+                            color: $background-c;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            border: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        .pegawai {
+            &__container {
+                padding: 1rem 2%;
+
+                .toolbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-content: center;
+
+                    h1 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    a {
+                        font-size: 1.4rem;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        padding: 1rem;
+                    }
+                }
+
+                .search-bar {
+                    padding: 1rem;
+                    background-color: $primary-c;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    width: 15%;
+                    color: $background-c;
+                    margin-bottom: 5rem;
+
+                    input {
+                        width: 100%;
+                        height: 100%;
+                        background-color: transparent;
+                        border: none;
+                        color: $background-c;
+                        font-size: 1.3rem;
+
+                        &::placeholder {
+                            color: $background-c;
+                            opacity: 0.8;
+                        }
+
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+                }
+
+                .pegawai__table {
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 1rem;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        td {
+                            font-size: 1.5rem;
+                            text-transform: capitalize;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.2rem;
+                            }
+
+                            img {
+                                width: 100px;
+                                height: 100px;
+                                border-radius: 50%;
+                                object-fit: cover;
+                            }
+                        }
+
+                        .action__btn {
+                            display: flex;
+                            justify-content: center;
+                            gap: 1rem;
+
+                            a {
+                                width: 100%;
+                                padding: 1rem;
+                                background-color: #27ae60;
+                                color: $background-c;
+                                display: grid;
+                                place-items: center;
+                                height: 110px;
+                                border-radius: 12px;
+                                span {
+                                    font-size: 1.5rem;
+                                }
+                            }
+
+                            button {
+                                width: 100%;
+                                padding: 1rem;
+                                background-color: #c0392b;
+                                color: $background-c;
+                                display: grid;
+                                place-items: center;
+                                border: none;
+                                height: 110px;
+                                border-radius: 12px;
+                                span {
+                                    font-size: 1.5rem;
+                                }
+                            }
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 2rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .form-pegawai {
+            .pegawai__container {
+                padding: 1rem 2%;
+                max-width: 1440px;
+
+                .toolbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    h1 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+                }
+
+                form {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3rem;
+                    margin-top: 5rem;
+
+                    .form__group {
+                        display: flex;
+                        gap: 2rem;
+
+                        label {
+                            width: 20%;
+                            padding: 1rem;
+                            font-size: 1.3rem;
+                        }
+
+                        input {
+                            width: 100%;
+                            height: 50px;
+                            background-color: transparent;
+                            border: 1px solid #ddd;
+                            padding: 1rem;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            height: 80px;
+                            color: $text-c;
+                        }
+
+                        input[type="file"] {
+                            border: none;
+                            background-color: $primary-c;
+                            color: $background-c;
+                            border-bottom: 1px solid #ddd;
+                            padding: 1rem;
+                            border-radius: 12px;
+                            font-size: 1.3rem;
+                            height: 80px;
+                            display: grid;
+                            place-items: center;
+                        }
+                    }
+
+                    button {
+                        width: 100%;
+                        height: 80px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border-radius: 12px;
+                        font-size: 1.5rem;
+                        padding: 1rem;
+                        letter-spacing: 2px;
+                    }
+                }
+            }
+        }
+
+        .rekapitulasi {
+            &__container {
+                padding: 1rem 2%;
+
+                .toolbar {
+                    display: flex;
+                    margin-top: 2rem;
+                    margin-bottom: 2rem;
+                    width: 100%;
+                    gap: 2rem;
+                    align-items: center;
+
+                    h2 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    .date {
+                        padding: 1rem;
+                        background-color: transparent;
+                        border-radius: 12px;
+                        border: none;
+                        border-bottom: 1px solid #ddd;
+                        font-size: 1.3rem;
+                        color: $text-c;
+                        outline: none;
+                    }
+                }
+
+                .rekapitulasi-table {
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 1rem;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        .action__btn {
+                            display: flex;
+                            justify-content: space-around;
+                        }
+
+                        td {
+                            font-size: 1.4rem;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.2rem;
+                            }
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 1.5rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+                    }
+                }
+
+                h3 {
+                    padding: 1rem;
+                    background-color: $primary-c;
+                    color: $background-c;
+                    font-size: 2rem;
+                    height: 80px;
+                    display: grid;
+                    place-items: center;
+                }
+
+                .content {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    img {
+                        width: 300px;
+                        height: 300px;
+                        object-fit: cover;
+                    }
+
+                    .text {
+                        h2 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .data-transaksi {
+            .data__transaksi-container {
+                padding: 1rem 2%;
+
+                .toolbar {
+                    display: flex;
+                    margin-top: 2rem;
+                    margin-bottom: 2rem;
+                    width: 100%;
+                    gap: 2rem;
+                    align-items: center;
+
+                    h2 {
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                    }
+
+                    .search {
+                        .date {
+                            padding: 1rem;
+                            background-color: transparent;
+                            border-radius: 12px;
+                            border: none;
+                            border-bottom: 1px solid #ddd;
+                            font-size: 1.3rem;
+                            color: $text-c;
+                            outline: none;
+                        }
+                    }
+                }
+
+                .transaksi-table {
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 1rem;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        td {
+                            font-size: 1.4rem;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.2rem;
+                            }
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 1.5rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+
+                            @media only screen and (max-width: 992px) {
+                                font-size: 1.3rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,126 @@
+@import "./globals.scss";
+
+.login {
+    &__container {
+        padding: 1rem 2%;
+
+        @media only screen and (max-width: 992px) {
+            padding: 1rem 0;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            .img {
+                width: 100%;
+                display: grid;
+                place-items: center;
+
+                img {
+                    width: 400px;
+                    height: 400px;
+                    object-fit: cover;
+
+                    @media only screen and (max-width: 1280px) {
+                        width: 300px;
+                        height: 300px;
+                    }
+
+                    @media only screen and (max-width: 468px) {
+                        width: 200px;
+                        height: 200px;
+                    }
+                }
+            }
+
+            form {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                background-color: $background-c;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                padding: 1rem;
+                width: 30%;
+                gap: 2rem;
+                margin-top: 2rem;
+
+                @media only screen and (max-width: 1280px) {
+                    width: 50%;
+                }
+
+                @media only screen and (max-width: 992px) {
+                    width: 70%;
+                }
+
+                @media only screen and (max-width: 992px) {
+                    width: 100%;
+                }
+
+                .form__box {
+                    position: relative;
+                    display: flex;
+                    width: 100%;
+                    align-items: center;
+                    gap: 1rem;
+
+                    input {
+                        width: 100%;
+                        height: 60px;
+                        background-color: transparent;
+                        border: none;
+                        padding: 1rem;
+                        border-bottom: 1px solid $primary-c;
+                        color: $text-c;
+                        font-size: 1.3rem;
+
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+                }
+
+                .btn {
+                    width: 100%;
+                    .login__btn {
+                        width: 100%;
+                        height: 60px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border: none;
+                        border-radius: 12px;
+                        font-size: 1.4rem;
+                        letter-spacing: 2px;
+                        cursor: pointer;
+                    }
+
+                    .reset__btn {
+                        width: 100%;
+                        height: 60px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        border: none;
+                        border-radius: 12px;
+                        font-size: 1.4rem;
+                        letter-spacing: 2px;
+                    }
+                }
+
+                .forgot-password {
+                    margin-top: 1rem;
+                    margin-bottom: 1rem;
+                    .link {
+                        text-decoration: none;
+                        color: $primary-c;
+                        font-size: 1.3rem;
+                        cursor: pointer;
+                        letter-spacing: 2px;
+                    }
+                }
+            }
+        }
+    }
+}
