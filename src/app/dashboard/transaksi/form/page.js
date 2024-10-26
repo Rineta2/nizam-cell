@@ -1,12 +1,18 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { db } from "@/utlis/firebase";
-import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import KembalianModal from "@/components/UI/section/dashboard/transaksi/Kembalian";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import "@/components/styles/Dashboard.scss";
 
 export default function FormTransaksi() {
@@ -18,7 +24,9 @@ export default function FormTransaksi() {
   const [keteranganService, setKeteranganService] = useState("");
   const [tanggal, setTanggal] = useState("");
   const [clientPayment, setClientPayment] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState([{ id: "", quantity: 1, price: 0, name: "" }]);
+  const [selectedProducts, setSelectedProducts] = useState([
+    { id: "", quantity: 1, price: 0, name: "" },
+  ]);
   const [totalHarga, setTotalHarga] = useState(0);
   const [kembalian, setKembalian] = useState(0);
   const [productList, setProductList] = useState([]);
@@ -34,10 +42,18 @@ export default function FormTransaksi() {
           const data = transaksiSnap.data();
           setKodeTransaksi(data.kodeTransaksi || "");
           setKeteranganService(data.keteranganService || "");
-          setTanggal(data.tanggal ? new Date(data.tanggal.seconds * 1000).toISOString().slice(0, 10) : "");
+          setTanggal(
+            data.tanggal
+              ? new Date(data.tanggal.seconds * 1000).toISOString().slice(0, 10)
+              : ""
+          );
           setSelectedProducts(data.selectedProducts || []);
           setTotalHarga(data.totalHarga || 0);
-          setClientPayment(data.clientPayment ? formatCurrency(data.clientPayment.toString()) : "");
+          setClientPayment(
+            data.clientPayment
+              ? formatCurrency(data.clientPayment.toString())
+              : ""
+          );
         } else {
           console.log("Transaksi tidak ditemukan.");
         }
@@ -46,7 +62,10 @@ export default function FormTransaksi() {
 
     const fetchProducts = async () => {
       const productSnapshot = await getDocs(collection(db, "dataBarang"));
-      const products = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const products = productSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setProductList(products);
     };
 
@@ -70,13 +89,20 @@ export default function FormTransaksi() {
     updatedProducts[index] = { ...updatedProducts[index], [field]: value };
 
     if (field === "id") {
-      const selectedProduct = productList.find(product => product.id === value);
+      const selectedProduct = productList.find(
+        (product) => product.id === value
+      );
       if (selectedProduct) {
-        updatedProducts[index].name = selectedProduct.name;
-        updatedProducts[index].price = selectedProduct.hargaJual || 0;
-        updatedProducts[index].quantity = 1;
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          name: selectedProduct.name,
+          price: selectedProduct.hargaJual || 0,
+          quantity: 1,
+        };
 
-        const newKeteranganService = updatedProducts.map(prod => prod.name).join(", ");
+        const newKeteranganService = updatedProducts
+          .map((prod) => prod.name)
+          .join(", ");
         setKeteranganService(newKeteranganService);
       }
     }
@@ -84,52 +110,28 @@ export default function FormTransaksi() {
   };
 
   const handleAddProduct = () => {
-    const newProduct = { id: "", quantity: 1, price: 0, name: "" };
-    setSelectedProducts([...selectedProducts, newProduct]);
+    setSelectedProducts([
+      ...selectedProducts,
+      { id: "", quantity: 1, price: 0, name: "" },
+    ]);
   };
 
-  const handleDelete = async (id) => {
-    const transaksiDoc = doc(db, "transaksi", id);
-    try {
-      const transaksiSnap = await getDoc(transaksiDoc);
-      if (transaksiSnap.exists()) {
-        const transaksiData = transaksiSnap.data();
-        const { selectedProducts } = transaksiData;
-
-        // Loop through selected products to update stock
-        for (let product of selectedProducts) {
-          const barangDocRef = doc(db, "dataBarang", product.id);
-          const barangSnap = await getDoc(barangDocRef);
-
-          if (barangSnap.exists()) {
-            const barangData = barangSnap.data();
-            const updatedQuantity = (barangData.quantity || 0) + product.quantity; // Ensure quantity is updated correctly
-            await updateDoc(barangDocRef, { quantity: updatedQuantity });
-            console.log(`Stok barang ${product.name} berhasil dikembalikan.`);
-          } else {
-            console.error(`Barang dengan ID ${product.id} tidak ditemukan.`);
-          }
-        }
-
-        // Now delete the transaction
-        await deleteDoc(transaksiDoc);
-        setTransaksi(transaksi.filter((trans) => trans.id !== id));
-        console.log("Transaksi berhasil dihapus.");
-      } else {
-        console.error("Transaksi tidak ditemukan.");
-      }
-    } catch (error) {
-      console.error("Error deleting transaction: ", error);
-    }
+  const handleRemoveProduct = (index) => {
+    const updatedProducts = selectedProducts.filter((_, i) => i !== index);
+    setSelectedProducts(updatedProducts);
   };
 
   const calculateTotalHarga = () => {
-    const total = selectedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+    const total = selectedProducts.reduce(
+      (acc, product) => acc + product.price * product.quantity,
+      0
+    );
     setTotalHarga(total);
   };
 
   const calculateKembalian = () => {
-    setKembalian(clientPayment.replace(/,/g, "") - totalHarga);
+    const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10) || 0;
+    setKembalian(paymentAmount - totalHarga);
   };
 
   useEffect(() => {
@@ -157,17 +159,18 @@ export default function FormTransaksi() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const paymentAmount = parseInt(clientPayment.replace(/,/g, ""));
-
-    // Check if payment is less than total price
+    const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10);
     if (paymentAmount < totalHarga) {
-      toast.warn("Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        draggable: true,
-      });
-      return; // Stop the submission if payment is insufficient
+      toast.warn(
+        "Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          draggable: true,
+        }
+      );
+      return;
     }
 
     if (paymentAmount <= 0) {
@@ -207,7 +210,7 @@ export default function FormTransaksi() {
     }
   };
 
-  const filteredProducts = productList.filter(product =>
+  const filteredProducts = productList.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -240,7 +243,9 @@ export default function FormTransaksi() {
                 <div key={index}>
                   <select
                     value={product.id}
-                    onChange={(e) => handleProductChange(index, "id", e.target.value)}
+                    onChange={(e) =>
+                      handleProductChange(index, "id", e.target.value)
+                    }
                     required
                   >
                     <option value="">Pilih Produk</option>
@@ -255,19 +260,38 @@ export default function FormTransaksi() {
                     type="number"
                     placeholder="Jumlah"
                     value={product.quantity}
-                    onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
+                    onChange={(e) =>
+                      handleProductChange(
+                        index,
+                        "quantity",
+                        Number(e.target.value)
+                      )
+                    }
                     required
                   />
 
-                  <button type="button" onClick={() => handleRemoveProduct(index)}>Hapus</button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveProduct(index)}
+                  >
+                    Hapus
+                  </button>
                 </div>
               ))}
 
-              <button type="button" onClick={handleAddProduct}>Tambah Produk</button>
+              <button type="button" onClick={handleAddProduct}>
+                Tambah Produk
+              </button>
             </div>
 
             <div className="form__group">
-              <input type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} required className="date" />
+              <input
+                type="date"
+                value={tanggal}
+                onChange={(e) => setTanggal(e.target.value)}
+                required
+                className="date"
+              />
               <input
                 type="text"
                 inputMode="numeric"
@@ -294,14 +318,14 @@ export default function FormTransaksi() {
         isOpen={isKembalianModalOpen}
         onClose={() => setIsKembalianModalOpen(false)}
         onConfirm={{
-          kembalian,
+          kembalian, // Pastikan ini ada dan valid
           confirm: () => {
             router.push("/dashboard/transaksi");
             setIsKembalianModalOpen(false);
           },
         }}
       />
-      <ToastContainer /> {/* Add ToastContainer for toast notifications */}
+      <ToastContainer />
     </section>
   );
 }

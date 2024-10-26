@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "electron": "^33.0.2",
-    "electron-builder": "^latest"
+    "electron-builder": "^25.1.8"
   },
   "build": {
     "appId": "com.namaanda.konter",
