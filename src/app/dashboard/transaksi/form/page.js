@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import DatePicker from "react-datepicker";
 import { db } from "@/utlis/firebase";
 import {
   addDoc,
@@ -13,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import KembalianModal from "@/components/UI/section/dashboard/transaksi/Kembalian";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "react-datepicker/dist/react-datepicker.css";
 import "@/components/styles/Dashboard.scss";
 
 export default function FormTransaksi() {
@@ -22,10 +24,10 @@ export default function FormTransaksi() {
 
   const [kodeTransaksi, setKodeTransaksi] = useState("");
   const [keteranganService, setKeteranganService] = useState("");
-  const [tanggal, setTanggal] = useState("");
+  const [tanggal, setTanggal] = useState(null);
   const [clientPayment, setClientPayment] = useState("");
   const [selectedProducts, setSelectedProducts] = useState([
-    { id: "", quantity: 1, price: 0, name: "" },
+    { id: "", quantity: 1, manualPrice: 0, name: "" },
   ]);
   const [totalHarga, setTotalHarga] = useState(0);
   const [kembalian, setKembalian] = useState(0);
@@ -43,9 +45,7 @@ export default function FormTransaksi() {
           setKodeTransaksi(data.kodeTransaksi || "");
           setKeteranganService(data.keteranganService || "");
           setTanggal(
-            data.tanggal
-              ? new Date(data.tanggal.seconds * 1000).toISOString().slice(0, 10)
-              : ""
+            data.tanggal ? new Date(data.tanggal.seconds * 1000) : null
           );
           setSelectedProducts(data.selectedProducts || []);
           setTotalHarga(data.totalHarga || 0);
@@ -57,6 +57,8 @@ export default function FormTransaksi() {
         } else {
           console.log("Transaksi tidak ditemukan.");
         }
+      } else {
+        setKodeTransaksi(generateKodeTransaksi());
       }
     };
 
@@ -75,6 +77,11 @@ export default function FormTransaksi() {
 
   const formatCurrency = (value) => {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const generateKodeTransaksi = () => {
+    const timestamp = new Date().getTime();
+    return `TRX-${timestamp}`;
   };
 
   const handleClientPaymentChange = (e) => {
@@ -96,7 +103,7 @@ export default function FormTransaksi() {
         updatedProducts[index] = {
           ...updatedProducts[index],
           name: selectedProduct.name,
-          price: selectedProduct.hargaJual || 0,
+          manualPrice: 0, // Reset manual price if new product selected
           quantity: 1,
         };
 
@@ -112,7 +119,7 @@ export default function FormTransaksi() {
   const handleAddProduct = () => {
     setSelectedProducts([
       ...selectedProducts,
-      { id: "", quantity: 1, price: 0, name: "" },
+      { id: "", quantity: 1, manualPrice: 0, name: "" },
     ]);
   };
 
@@ -123,7 +130,8 @@ export default function FormTransaksi() {
 
   const calculateTotalHarga = () => {
     const total = selectedProducts.reduce(
-      (acc, product) => acc + product.price * product.quantity,
+      (acc, product) =>
+        acc + (product.manualPrice || product.price) * product.quantity,
       0
     );
     setTotalHarga(total);
@@ -155,6 +163,60 @@ export default function FormTransaksi() {
       }
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10);
+  //   if (paymentAmount < totalHarga) {
+  //     toast.warn(
+  //       "Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.",
+  //       {
+  //         position: "top-center",
+  //         autoClose: 5000,
+  //         hideProgressBar: false,
+  //         draggable: true,
+  //       }
+  //     );
+  //     return;
+  //   }
+
+  //   if (paymentAmount <= 0) {
+  //     toast.warn("Mohon masukkan jumlah pembayaran dari client.", {
+  //       position: "top-center",
+  //       autoClose: 5000,
+  //       hideProgressBar: false,
+  //       draggable: true,
+  //     });
+  //     return;
+  //   }
+
+  //   const newTransaksi = {
+  //     kodeTransaksi,
+  //     keteranganService,
+  //     selectedProducts,
+  //     totalHarga,
+  //     clientPayment: paymentAmount,
+  //     kembalian,
+  //     tanggal: tanggal ? tanggal.toISOString() : null,
+  //   };
+
+  //   try {
+  //     if (id) {
+  //       const transaksiDoc = doc(db, "transaksi", id);
+  //       await updateDoc(transaksiDoc, newTransaksi);
+  //       console.log("Transaksi berhasil diperbarui.");
+  //     } else {
+  //       await addDoc(collection(db, "transaksi"), newTransaksi);
+  //       console.log("Transaksi berhasil ditambahkan.");
+  //     }
+
+  //     await updateProductQuantities();
+  //     setIsKembalianModalOpen(true);
+  //   } catch (error) {
+  //     console.error("Error adding/updating transaksi: ", error);
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -190,7 +252,7 @@ export default function FormTransaksi() {
       totalHarga,
       clientPayment: paymentAmount,
       kembalian,
-      tanggal: new Date(tanggal),
+      tanggal: tanggal ? tanggal.toISOString() : null,
     };
 
     try {
@@ -201,9 +263,13 @@ export default function FormTransaksi() {
       } else {
         await addDoc(collection(db, "transaksi"), newTransaksi);
         console.log("Transaksi berhasil ditambahkan.");
+        await updateProductQuantities(); // Update product quantities only when adding a new transaction
       }
 
-      await updateProductQuantities();
+      if (!id) {
+        await updateProductQuantities(); // Only update product quantities if it's a new transaction
+      }
+
       setIsKembalianModalOpen(true);
     } catch (error) {
       console.error("Error adding/updating transaksi: ", error);
@@ -220,22 +286,28 @@ export default function FormTransaksi() {
         <div className="content">
           <form onSubmit={handleSubmit}>
             <div className="form__group">
-              <input
-                type="text"
-                placeholder="Kode Transaksi"
-                value={kodeTransaksi}
-                onChange={(e) => setKodeTransaksi(e.target.value)}
-                required
-                disabled
-                readOnly
-              />
-              <input
-                placeholder="Nama Produk"
-                value={keteranganService}
-                onChange={(e) => setKeteranganService(e.target.value)}
-                required
-                disabled
-              />
+              <div className="box">
+                <label>Kode Transaksi</label>
+                <input
+                  type="text"
+                  placeholder="Kode Transaksi"
+                  value={kodeTransaksi}
+                  onChange={(e) => setKodeTransaksi(e.target.value)}
+                  required
+                  disabled
+                  readOnly
+                />
+              </div>
+              <div className="box">
+                <label>Nama Produk</label>
+                <input
+                  placeholder="Nama Produk"
+                  value={keteranganService}
+                  onChange={(e) => setKeteranganService(e.target.value)}
+                  required
+                  disabled
+                />
+              </div>
             </div>
 
             <div className="form__group-product">
@@ -256,76 +328,112 @@ export default function FormTransaksi() {
                     ))}
                   </select>
 
-                  <input
-                    type="number"
-                    placeholder="Jumlah"
-                    value={product.quantity}
-                    onChange={(e) =>
-                      handleProductChange(
-                        index,
-                        "quantity",
-                        Number(e.target.value)
-                      )
-                    }
-                    required
-                  />
+                  <div className="box">
+                    <label>Jumlah</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={product.quantity}
+                      onChange={(e) =>
+                        handleProductChange(
+                          index,
+                          "quantity",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div className="box">
+                    <label>Harga Manual</label>
+                    <input
+                      type="text"
+                      value={product.manualPrice || ""}
+                      onChange={(e) =>
+                        handleProductChange(
+                          index,
+                          "manualPrice",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
 
                   <button
                     type="button"
                     onClick={() => handleRemoveProduct(index)}
                   >
-                    Hapus
+                    Hapus Produk
                   </button>
                 </div>
               ))}
-
               <button type="button" onClick={handleAddProduct}>
                 Tambah Produk
               </button>
             </div>
 
             <div className="form__group">
-              <input
-                type="date"
-                value={tanggal}
-                onChange={(e) => setTanggal(e.target.value)}
-                required
-                className="date"
-              />
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="Pembayaran"
-                value={clientPayment}
-                onChange={handleClientPaymentChange}
-                required
-              />
+              <div className="box">
+                <label>Total Harga</label>
+                <input
+                  type="text"
+                  placeholder="Total Harga"
+                  value={`Rp ${totalHarga.toLocaleString()}`}
+                  readOnly
+                />
+              </div>
+
+              <div className="box">
+                <label>Pembayaran Client</label>
+                <input
+                  type="text"
+                  placeholder="Pembayaran"
+                  value={clientPayment}
+                  onChange={handleClientPaymentChange}
+                  required
+                />
+              </div>
+
+              <div className="box">
+                <label>Tanggal</label>
+                <input
+                  type="date"
+                  value={
+                    tanggal instanceof Date && !isNaN(tanggal)
+                      ? tanggal.toISOString().split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) => setTanggal(new Date(e.target.value))}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="form__group-total">
-              <h3>Total Harga: Rp {totalHarga.toLocaleString()}</h3>
-              <h3>Kembalian: Rp {kembalian.toLocaleString()}</h3>
+            <div className="form__group">
+              <div className="box">
+                <label>Kembalian</label>
+                <input
+                  type="text"
+                  placeholder="Kembalian"
+                  value={`Rp ${kembalian.toLocaleString()}`}
+                  readOnly
+                />
+              </div>
             </div>
 
             <button type="submit">
-              {id ? "Perbarui Transaksi" : "Tambah Transaksi"}
+              {id ? "Perbarui Transaksi" : "Simpan Transaksi"}
             </button>
           </form>
+          {isKembalianModalOpen && (
+            <KembalianModal
+              kembalian={kembalian}
+              onClose={() => setIsKembalianModalOpen(false)}
+            />
+          )}
+          <ToastContainer />
         </div>
       </div>
-
-      <KembalianModal
-        isOpen={isKembalianModalOpen}
-        onClose={() => setIsKembalianModalOpen(false)}
-        onConfirm={{
-          kembalian, // Pastikan ini ada dan valid
-          confirm: () => {
-            router.push("/dashboard/transaksi");
-            setIsKembalianModalOpen(false);
-          },
-        }}
-      />
-      <ToastContainer />
     </section>
   );
 }

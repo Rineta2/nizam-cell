@@ -6,7 +6,7 @@ import { db } from "@/utlis/firebase";
 import { FaEdit } from "react-icons/fa";
 import { IoTrashOutline } from "react-icons/io5";
 import Modal from "@/components/UI/section/dashboard/data-barang/Modal";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast, Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function DataBarang() {
@@ -85,7 +85,7 @@ export default function DataBarang() {
               <th>Kode Barang</th>
               <th>Nama Barang</th>
               <th>Harga Modal</th>
-              <th>Harga Jual</th>
+              <th>Total Harga</th>
               <th>Stok</th>
               <th>Action</th>
             </tr>
@@ -135,7 +135,7 @@ export default function DataBarang() {
           draggable
           pauseOnHover={false}
           theme="light"
-          transition="Flip"
+          transition={Flip}
         />
       </div>
     </section>

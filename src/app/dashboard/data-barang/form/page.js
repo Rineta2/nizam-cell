@@ -7,22 +7,33 @@ import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "@/components/styles/Dashboard.scss";
 import Link from "next/link";
-import img from "@/components/assets/dashboard/data-barang/img.png";
-import Image from "next/image";
 
 export default function FormBarang() {
   const [kodeBarang, setKodeBarang] = useState("");
   const [name, setName] = useState("");
   const [hargaModal, setHargaModal] = useState("");
-  const [hargaJual, setHargaJual] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [totalHargaJual, setTotalHargaJual] = useState("0");
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const router = useRouter();
 
   const formatNumber = (value) => {
+    if (typeof value !== "string") return "";
     return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+
+  useEffect(() => {
+    const calculateTotalHargaJual = () => {
+      const parsedHargaModal = parseInt(hargaModal.replace(/,/g, "")) || 0;
+      const parsedQuantity = parseInt(quantity.replace(/,/g, "")) || 0;
+      setTotalHargaJual(
+        formatNumber((parsedHargaModal * parsedQuantity).toString())
+      );
+    };
+
+    calculateTotalHargaJual();
+  }, [hargaModal, quantity]);
 
   useEffect(() => {
     const fetchBarang = async () => {
@@ -33,9 +44,8 @@ export default function FormBarang() {
           const data = docSnap.data();
           setKodeBarang(data.kodeBarang);
           setName(data.name);
-          setHargaModal(data.hargaModal.toString());
-          setHargaJual(data.hargaJual.toString());
-          setQuantity(data.quantity.toString());
+          setHargaModal(formatNumber(data.hargaModal.toString()));
+          setQuantity(formatNumber(data.quantity.toString()));
         } else {
           toast.error("Data tidak ditemukan");
         }
@@ -53,14 +63,13 @@ export default function FormBarang() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !hargaModal || !hargaJual || !quantity) {
+    if (!name || !hargaModal || !quantity) {
       toast.error("Mohon isi semua kolom.");
       return;
     }
 
     try {
       const parsedHargaModal = parseInt(hargaModal.replace(/,/g, ""));
-      const parsedHargaJual = parseInt(hargaJual.replace(/,/g, ""));
       const parsedQuantity = parseInt(quantity.replace(/,/g, ""));
 
       if (id) {
@@ -69,7 +78,7 @@ export default function FormBarang() {
           kodeBarang,
           name,
           hargaModal: parsedHargaModal,
-          hargaJual: parsedHargaJual,
+          hargaJual: parsedHargaModal * parsedQuantity,
           quantity: parsedQuantity,
         });
         toast.success("Barang berhasil diupdate");
@@ -78,7 +87,7 @@ export default function FormBarang() {
           kodeBarang,
           name,
           hargaModal: parsedHargaModal,
-          hargaJual: parsedHargaJual,
+          hargaJual: parsedHargaModal * parsedQuantity,
           quantity: parsedQuantity,
         });
         toast.success("Barang berhasil ditambahkan");
@@ -117,7 +126,12 @@ export default function FormBarang() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Kode Barang</label>
-            <input type="text" value={kodeBarang} disabled className="input-disabled" />
+            <input
+              type="text"
+              value={kodeBarang}
+              disabled
+              className="input-disabled"
+            />
           </div>
 
           <div className="form-group">
@@ -141,16 +155,6 @@ export default function FormBarang() {
           </div>
 
           <div className="form-group">
-            <label>Harga Jual</label>
-            <input
-              type="text"
-              value={hargaJual}
-              onChange={(e) => setHargaJual(formatNumber(e.target.value))}
-              required
-            />
-          </div>
-
-          <div className="form-group">
             <label>Stok Barang</label>
             <input
               type="text"
@@ -160,7 +164,14 @@ export default function FormBarang() {
             />
           </div>
 
-          <button type="submit">{id ? "Update Barang" : "Tambah Barang"}</button>
+          <div className="form-group">
+            <label>Total Harga Jual</label>
+            <input type="text" value={totalHargaJual} readOnly />
+          </div>
+
+          <button type="submit">
+            {id ? "Update Barang" : "Tambah Barang"}
+          </button>
         </form>
       </div>
     </section>

@@ -1,12 +1,14 @@
 import React from "react";
 import Image from "next/image";
 import deleteIcon from "@/components/assets/dashboard/transaksi/kembalian.png";
+import { useRouter } from "next/navigation";
 
-const KembalianModal = ({ isOpen, onConfirm }) => {
-  if (!isOpen) return null;
+const KembalianModal = ({ kembalian, onClose }) => {
+  const router = useRouter();
 
-  // Memastikan kembalian memiliki nilai default
-  const kembalian = onConfirm.kembalian || 0;
+  const handleConfirm = () => {
+    router.push("/dashboard/transaksi");
+  };
 
   return (
     <div className="modal-overlay">
@@ -18,12 +20,11 @@ const KembalianModal = ({ isOpen, onConfirm }) => {
           height={200}
           quality={100}
         />
-        <h2>Konfirmasi Kembalian</h2>
-
-        <h1>Rp {kembalian.toLocaleString()}</h1>
-
+        <h2>Kembalian</h2>
+        <h1>Jumlah kembalian: Rp {kembalian.toLocaleString()}</h1>
         <div className="modal-actions">
-          <button onClick={() => onConfirm.confirm()}>Ya</button>
+          <button onClick={onClose}>Tutup</button>
+          <button onClick={handleConfirm}>Ya</button>
         </div>
       </div>
     </div>
