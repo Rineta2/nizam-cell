@@ -36,7 +36,9 @@ export default function Page() {
       setFilteredTransaksi(transaksi);
     } else {
       const filtered = transaksi.filter((trans) => {
-        const transactionDate = new Date(trans.tanggal.seconds * 1000).toLocaleDateString("en-CA");
+        const transactionDate = new Date(
+          trans.tanggal.seconds * 1000
+        ).toLocaleDateString("en-CA");
         const selectedDate = searchDate.toLocaleDateString("en-CA");
         return transactionDate === selectedDate;
       });
@@ -75,8 +77,16 @@ export default function Page() {
               filteredTransaksi.map((trans) => (
                 <tr key={trans.id}>
                   <td>{trans.kodeTransaksi}</td>
-                  <td>{new Date(trans.tanggal.seconds * 1000).toLocaleDateString("id-ID")}</td>
-                  <td>{trans.selectedProducts.map((product) => product.name).join(", ")}</td>
+                  <td>
+                    {new Date(trans.tanggal.seconds * 1000).toLocaleDateString(
+                      "id-ID"
+                    )}
+                  </td>
+                  <td>
+                    {trans.selectedProducts
+                      .map((product) => product.name)
+                      .join(", ")}
+                  </td>
                   <td>Rp {trans.totalHarga.toLocaleString("id-ID")}</td>
                 </tr>
               ))

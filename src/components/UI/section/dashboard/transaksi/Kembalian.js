@@ -1,12 +1,15 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import deleteIcon from "@/components/assets/dashboard/transaksi/kembalian.png";
-import { useRouter } from "next/navigation";
 
-const KembalianModal = ({ kembalian, onClose }) => {
+const KembalianModal = ({ isOpen, onClose, kembalian }) => {
   const router = useRouter();
 
-  const handleConfirm = () => {
+  if (!isOpen) return null;
+
+  const handleRedirect = () => {
+    onClose();
     router.push("/dashboard/transaksi");
   };
 
@@ -21,10 +24,9 @@ const KembalianModal = ({ kembalian, onClose }) => {
           quality={100}
         />
         <h2>Kembalian</h2>
-        <h1>Jumlah kembalian: Rp {kembalian.toLocaleString()}</h1>
+        <h1>Rp {kembalian.toLocaleString()}</h1>
         <div className="modal-actions">
-          <button onClick={onClose}>Tutup</button>
-          <button onClick={handleConfirm}>Ya</button>
+          <button onClick={handleRedirect}>Ya</button>
         </div>
       </div>
     </div>

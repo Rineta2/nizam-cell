@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import DatePicker from "react-datepicker";
 import { db } from "@/utlis/firebase";
 import {
   addDoc,
@@ -12,10 +11,8 @@ import {
 } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import KembalianModal from "@/components/UI/section/dashboard/transaksi/Kembalian";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "react-datepicker/dist/react-datepicker.css";
 import "@/components/styles/Dashboard.scss";
+import Link from "next/link";
 
 export default function FormTransaksi() {
   const searchParams = useSearchParams();
@@ -24,16 +21,16 @@ export default function FormTransaksi() {
 
   const [kodeTransaksi, setKodeTransaksi] = useState("");
   const [keteranganService, setKeteranganService] = useState("");
-  const [tanggal, setTanggal] = useState(null);
+  const [tanggal, setTanggal] = useState("");
   const [clientPayment, setClientPayment] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState([
-    { id: "", quantity: 1, manualPrice: 0, name: "" },
-  ]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
   const [totalHarga, setTotalHarga] = useState(0);
   const [kembalian, setKembalian] = useState(0);
   const [productList, setProductList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isKembalianModalOpen, setIsKembalianModalOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   useEffect(() => {
     const fetchTransaksi = async () => {
@@ -45,7 +42,9 @@ export default function FormTransaksi() {
           setKodeTransaksi(data.kodeTransaksi || "");
           setKeteranganService(data.keteranganService || "");
           setTanggal(
-            data.tanggal ? new Date(data.tanggal.seconds * 1000) : null
+            data.tanggal
+              ? new Date(data.tanggal.seconds * 1000).toISOString().slice(0, 10)
+              : ""
           );
           setSelectedProducts(data.selectedProducts || []);
           setTotalHarga(data.totalHarga || 0);
@@ -57,8 +56,6 @@ export default function FormTransaksi() {
         } else {
           console.log("Transaksi tidak ditemukan.");
         }
-      } else {
-        setKodeTransaksi(generateKodeTransaksi());
       }
     };
 
@@ -80,8 +77,8 @@ export default function FormTransaksi() {
   };
 
   const generateKodeTransaksi = () => {
-    const timestamp = new Date().getTime();
-    return `TRX-${timestamp}`;
+    const timestamp = Date.now().toString();
+    return `TX-${timestamp}`;
   };
 
   const handleClientPaymentChange = (e) => {
@@ -93,53 +90,41 @@ export default function FormTransaksi() {
 
   const handleProductChange = (index, field, value) => {
     const updatedProducts = [...selectedProducts];
-    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
-
-    if (field === "id") {
-      const selectedProduct = productList.find(
-        (product) => product.id === value
-      );
-      if (selectedProduct) {
+    if (field === "quantity") {
+      if (value > updatedProducts[index].maxStock) {
+        alert(
+          `Stok tidak mencukupi! Stok tersedia: ${updatedProducts[index].maxStock}`
+        );
+        return;
+      }
+      updatedProducts[index] = { ...updatedProducts[index], quantity: value };
+    } else if (field === "price") {
+      const numericValue = value.toString().replace(/,/g, "");
+      if (!isNaN(numericValue)) {
         updatedProducts[index] = {
           ...updatedProducts[index],
-          name: selectedProduct.name,
-          manualPrice: 0, // Reset manual price if new product selected
-          quantity: 1,
+          price: Number(numericValue),
         };
-
-        const newKeteranganService = updatedProducts
-          .map((prod) => prod.name)
-          .join(", ");
-        setKeteranganService(newKeteranganService);
       }
     }
     setSelectedProducts(updatedProducts);
   };
 
   const handleAddProduct = () => {
-    setSelectedProducts([
-      ...selectedProducts,
-      { id: "", quantity: 1, manualPrice: 0, name: "" },
-    ]);
-  };
-
-  const handleRemoveProduct = (index) => {
-    const updatedProducts = selectedProducts.filter((_, i) => i !== index);
-    setSelectedProducts(updatedProducts);
+    const newProduct = { id: "", quantity: 1, price: 0, name: "" };
+    setSelectedProducts([...selectedProducts, newProduct]);
   };
 
   const calculateTotalHarga = () => {
     const total = selectedProducts.reduce(
-      (acc, product) =>
-        acc + (product.manualPrice || product.price) * product.quantity,
+      (acc, product) => acc + product.price * product.quantity,
       0
     );
     setTotalHarga(total);
   };
 
   const calculateKembalian = () => {
-    const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10) || 0;
-    setKembalian(paymentAmount - totalHarga);
+    setKembalian(clientPayment.replace(/,/g, "") - totalHarga);
   };
 
   useEffect(() => {
@@ -151,128 +136,52 @@ export default function FormTransaksi() {
   }, [clientPayment, totalHarga]);
 
   const updateProductQuantities = async () => {
-    for (const product of selectedProducts) {
-      const productDoc = doc(db, "dataBarang", product.id);
-      const productSnap = await getDoc(productDoc);
+    if (!id) {
+      for (const product of selectedProducts) {
+        const productDoc = doc(db, "dataBarang", product.id);
+        const productSnap = await getDoc(productDoc);
 
-      if (productSnap.exists()) {
-        const currentQuantity = productSnap.data().quantity || 0;
-        const newQuantity = currentQuantity - product.quantity;
+        if (productSnap.exists()) {
+          const currentQuantity = productSnap.data().quantity || 0;
+          const newQuantity = currentQuantity - product.quantity;
 
-        await updateDoc(productDoc, { quantity: newQuantity });
+          await updateDoc(productDoc, { quantity: newQuantity });
+        }
       }
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10);
-  //   if (paymentAmount < totalHarga) {
-  //     toast.warn(
-  //       "Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.",
-  //       {
-  //         position: "top-center",
-  //         autoClose: 5000,
-  //         hideProgressBar: false,
-  //         draggable: true,
-  //       }
-  //     );
-  //     return;
-  //   }
-
-  //   if (paymentAmount <= 0) {
-  //     toast.warn("Mohon masukkan jumlah pembayaran dari client.", {
-  //       position: "top-center",
-  //       autoClose: 5000,
-  //       hideProgressBar: false,
-  //       draggable: true,
-  //     });
-  //     return;
-  //   }
-
-  //   const newTransaksi = {
-  //     kodeTransaksi,
-  //     keteranganService,
-  //     selectedProducts,
-  //     totalHarga,
-  //     clientPayment: paymentAmount,
-  //     kembalian,
-  //     tanggal: tanggal ? tanggal.toISOString() : null,
-  //   };
-
-  //   try {
-  //     if (id) {
-  //       const transaksiDoc = doc(db, "transaksi", id);
-  //       await updateDoc(transaksiDoc, newTransaksi);
-  //       console.log("Transaksi berhasil diperbarui.");
-  //     } else {
-  //       await addDoc(collection(db, "transaksi"), newTransaksi);
-  //       console.log("Transaksi berhasil ditambahkan.");
-  //     }
-
-  //     await updateProductQuantities();
-  //     setIsKembalianModalOpen(true);
-  //   } catch (error) {
-  //     console.error("Error adding/updating transaksi: ", error);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const paymentAmount = parseInt(clientPayment.replace(/,/g, ""), 10);
-    if (paymentAmount < totalHarga) {
-      toast.warn(
-        "Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.",
-        {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          draggable: true,
-        }
-      );
-      return;
-    }
 
-    if (paymentAmount <= 0) {
-      toast.warn("Mohon masukkan jumlah pembayaran dari client.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        draggable: true,
-      });
+    if (paymentAmount < totalHarga) {
+      alert("Pembayaran tidak mencukupi! Mohon masukkan jumlah yang benar.");
       return;
     }
 
     const newTransaksi = {
-      kodeTransaksi,
+      kodeTransaksi: id ? kodeTransaksi : generateKodeTransaksi(),
       keteranganService,
       selectedProducts,
       totalHarga,
       clientPayment: paymentAmount,
       kembalian,
-      tanggal: tanggal ? tanggal.toISOString() : null,
+      tanggal: new Date(tanggal),
     };
 
     try {
       if (id) {
-        const transaksiDoc = doc(db, "transaksi", id);
-        await updateDoc(transaksiDoc, newTransaksi);
-        console.log("Transaksi berhasil diperbarui.");
+        await updateDoc(doc(db, "transaksi", id), newTransaksi);
       } else {
-        await addDoc(collection(db, "transaksi"), newTransaksi);
-        console.log("Transaksi berhasil ditambahkan.");
-        await updateProductQuantities(); // Update product quantities only when adding a new transaction
+        const docRef = await addDoc(collection(db, "transaksi"), newTransaksi);
+        router.push(`/dashboard/transaksi/form?id=${docRef.id}`);
       }
-
-      if (!id) {
-        await updateProductQuantities(); // Only update product quantities if it's a new transaction
-      }
-
+      await updateProductQuantities();
       setIsKembalianModalOpen(true);
     } catch (error) {
-      console.error("Error adding/updating transaksi: ", error);
+      alert("Gagal menambah atau memperbarui transaksi.");
+      console.error(error);
     }
   };
 
@@ -280,26 +189,87 @@ export default function FormTransaksi() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || !filteredProducts.length) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < filteredProducts.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (selectedIndex >= 0) {
+          handleProductSelect(filteredProducts[selectedIndex]);
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setShowSuggestions(true);
+    setSelectedIndex(-1); // Reset selected index when search changes
+  };
+
+  const handleProductSelect = (product) => {
+    // Add stock check
+    if (product.quantity <= 0) {
+      alert(`Stok untuk produk "${product.name}" telah habis!`);
+      return;
+    }
+
+    const newProduct = {
+      id: product.id,
+      name: `${product.name} - Rp ${product.hargaJual?.toLocaleString()}`,
+      displayName: product.name,
+      price: 0,
+      quantity: 1,
+      maxStock: product.quantity, // Store the max available stock
+    };
+    setSelectedProducts([...selectedProducts, newProduct]);
+    setSearchTerm("");
+    setShowSuggestions(false);
+
+    const updatedKeteranganService = [...selectedProducts, newProduct]
+      .map((prod) => prod.displayName)
+      .join(", ");
+    setKeteranganService(updatedKeteranganService);
+  };
+
   return (
     <section className="form-transaksi">
       <div className="container">
         <div className="content">
+          <div className="heading">
+            <h1>{id ? "Perbarui Transaksi" : "Tambah Transaksi"}</h1>
+            <Link href="/dashboard/transaksi">Kembali</Link>
+          </div>
+
           <form onSubmit={handleSubmit}>
             <div className="form__group">
               <div className="box">
-                <label>Kode Transaksi</label>
+                <label htmlFor="kodeTransaksi">Kode Transaksi</label>
                 <input
-                  type="text"
                   placeholder="Kode Transaksi"
                   value={kodeTransaksi}
                   onChange={(e) => setKodeTransaksi(e.target.value)}
                   required
                   disabled
-                  readOnly
                 />
               </div>
               <div className="box">
-                <label>Nama Produk</label>
+                <label htmlFor="keteranganService">Nama Produk</label>
                 <input
                   placeholder="Nama Produk"
                   value={keteranganService}
@@ -310,60 +280,119 @@ export default function FormTransaksi() {
               </div>
             </div>
 
+            <div className="form__group">
+              <div className="box">
+                <label htmlFor="searchProduct">Cari Produk</label>
+                <div
+                  className="search-container"
+                  style={{ position: "relative" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Cari produk..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  {showSuggestions && searchTerm && (
+                    <div
+                      className="suggestions"
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        backgroundColor: "white",
+                        border: "1px solid #ddd",
+                        borderRadius: "4px",
+                        maxHeight: "200px",
+                        overflowY: "auto",
+                        zIndex: 1000,
+                      }}
+                    >
+                      {filteredProducts.map((product, index) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleProductSelect(product)}
+                          style={{
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            borderBottom: "1px solid #eee",
+                            backgroundColor:
+                              index === selectedIndex ? "#e6e6e6" : "white",
+                          }}
+                          onMouseEnter={() => setSelectedIndex(index)}
+                        >
+                          {product.name} - Modal: Rp{" "}
+                          {product.hargaModal?.toLocaleString()} - Jual: Rp{" "}
+                          {product.hargaJual?.toLocaleString()}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="form__group-product">
               {selectedProducts.map((product, index) => (
                 <div key={index}>
-                  <select
-                    value={product.id}
-                    onChange={(e) =>
-                      handleProductChange(index, "id", e.target.value)
-                    }
-                    required
-                  >
-                    <option value="">Pilih Produk</option>
-                    {filteredProducts.map((prod) => (
-                      <option key={prod.id} value={prod.id}>
-                        {prod.name} - Rp {prod.hargaJual.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="box">
+                    <label>Produk</label>
+                    <input type="text" value={product.name} readOnly />
+                  </div>
 
                   <div className="box">
-                    <label>Jumlah</label>
+                    <label htmlFor="quantity">Jumlah</label>
                     <input
                       type="number"
-                      min="1"
+                      placeholder="Jumlah"
                       value={product.quantity}
                       onChange={(e) =>
                         handleProductChange(
                           index,
                           "quantity",
-                          parseInt(e.target.value)
+                          Number(e.target.value)
                         )
                       }
+                      required
                     />
                   </div>
 
                   <div className="box">
-                    <label>Harga Manual</label>
+                    <label htmlFor="price">Harga</label>
                     <input
                       type="text"
-                      value={product.manualPrice || ""}
+                      value={
+                        product.price ? product.price.toLocaleString() : ""
+                      }
                       onChange={(e) =>
                         handleProductChange(
                           index,
-                          "manualPrice",
-                          parseInt(e.target.value)
+                          "price",
+                          e.target.value.replace(/,/g, "")
                         )
                       }
+                      required
                     />
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => handleRemoveProduct(index)}
+                    onClick={() => {
+                      const newProducts = selectedProducts.filter(
+                        (_, i) => i !== index
+                      );
+                      setSelectedProducts(newProducts);
+                      // Update keteranganService after removing product
+                      const updatedKeteranganService = newProducts
+                        .map((prod) => prod.name)
+                        .join(", ");
+                      setKeteranganService(updatedKeteranganService);
+                    }}
                   >
-                    Hapus Produk
+                    Hapus
                   </button>
                 </div>
               ))}
@@ -374,36 +403,20 @@ export default function FormTransaksi() {
 
             <div className="form__group">
               <div className="box">
-                <label>Total Harga</label>
+                <label htmlFor="tanggal">Tanggal</label>
                 <input
-                  type="text"
-                  placeholder="Total Harga"
-                  value={`Rp ${totalHarga.toLocaleString()}`}
-                  readOnly
-                />
-              </div>
-
-              <div className="box">
-                <label>Pembayaran Client</label>
-                <input
-                  type="text"
-                  placeholder="Pembayaran"
-                  value={clientPayment}
-                  onChange={handleClientPaymentChange}
+                  type="date"
+                  value={tanggal}
+                  onChange={(e) => setTanggal(e.target.value)}
                   required
                 />
               </div>
-
               <div className="box">
-                <label>Tanggal</label>
+                <label htmlFor="clientPayment">Jumlah Pembayaran</label>
                 <input
-                  type="date"
-                  value={
-                    tanggal instanceof Date && !isNaN(tanggal)
-                      ? tanggal.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => setTanggal(new Date(e.target.value))}
+                  type="text"
+                  value={clientPayment}
+                  onChange={handleClientPaymentChange}
                   required
                 />
               </div>
@@ -411,27 +424,36 @@ export default function FormTransaksi() {
 
             <div className="form__group">
               <div className="box">
-                <label>Kembalian</label>
+                <label htmlFor="totalHarga">Total Harga</label>
                 <input
                   type="text"
-                  placeholder="Kembalian"
-                  value={`Rp ${kembalian.toLocaleString()}`}
+                  value={totalHarga.toLocaleString()}
+                  readOnly
+                />
+              </div>
+              <div className="box">
+                <label htmlFor="kembalian">Kembalian</label>
+                <input
+                  type="text"
+                  value={kembalian.toLocaleString()}
                   readOnly
                 />
               </div>
             </div>
 
             <button type="submit">
-              {id ? "Perbarui Transaksi" : "Simpan Transaksi"}
+              {id ? "Perbarui Transaksi" : "Tambah Transaksi"}
             </button>
           </form>
-          {isKembalianModalOpen && (
-            <KembalianModal
-              kembalian={kembalian}
-              onClose={() => setIsKembalianModalOpen(false)}
-            />
-          )}
-          <ToastContainer />
+
+          <KembalianModal
+            isOpen={isKembalianModalOpen}
+            onClose={() => {
+              setIsKembalianModalOpen(false);
+              router.push("/dashboard/transaksi");
+            }}
+            kembalian={kembalian}
+          />
         </div>
       </div>
     </section>
